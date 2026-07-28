@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import CartDrawer from './components/CartDrawer.jsx';
 import Footer from './components/Footer.jsx';
@@ -10,9 +10,12 @@ import Identificacion from './pages/Identificacion.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 export default function App() {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
   return (
     <>
-      <Navbar />
+      {!isHome && <Navbar />}
       <CartDrawer />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -22,7 +25,8 @@ export default function App() {
         <Route path="/checkout/identificacion" element={<Identificacion/>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Footer />
+      {!isHome && <Footer />}
     </>
   );
 }
+

@@ -1,36 +1,42 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getCategories } from '../services/api.js';
+
+const FEATURED = [
+  { slug: 'tecnologia', name: 'Tecnología', video: '/videos/tecnologia.mp4' },
+  { slug: 'maquillaje', name: 'Maquillaje', video: '/videos/maquillaje.mp4' },
+  { slug: 'hogar', name: 'Hogar', video: '/videos/hogar.mp4' },
+  { slug: 'juguetes', name: 'Juguetes', video: '/videos/juguetes.mp4' },
+];
 
 export default function Home() {
-  const [categories, setCategories] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    getCategories()
-      .then(setCategories)
-      .catch((err) => setError(err.message));
-  }, []);
-
   return (
-    <div className="container">
-      <section className="hero">
-        <h1>Todo lo que buscas, en un solo lugar</h1>
-        <p>
-          Tecnología, maquillaje, hogar, cocina y juguetes: productos importados
-          seleccionados con buena relación calidad-precio.
-        </p>
+    <div>
+      <section className="video-hero">
+        <div className="video-hero-grid">
+          {FEATURED.map((cat) => (
+            <Link key={cat.slug} to={`/categoria/${cat.slug}`} className="video-tile">
+              <video
+                className="video-tile-media"
+                src={cat.video}
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+              <div className="video-tile-overlay" />
+              <div className="video-tile-caption">
+                <span className="video-tile-name">{cat.name}</span>
+                <span className="video-tile-cta">Mostrar más →</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="video-hero-logo">
+          <img src="/images/logoNicos.png" alt="Nico's Import" />
+        </div>
       </section>
 
-      {error && <p className="empty-state">No se pudo cargar las categorías: {error}</p>}
 
-      <div className="category-grid">
-        {categories.map((cat) => (
-          <Link key={cat.id} to={`/categoria/${cat.slug}`} className="category-card">
-            {cat.name}
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }

@@ -59,8 +59,8 @@ button {
 }
 
 .cart-icon {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
 }
 
@@ -823,5 +823,108 @@ button {
 @media (max-width: 380px) {
   .product-card {
     width: 100%;
+  }
+}
+/* Hero de video estilo Dior: 4 cuadros con video + logo centrado encima */
+.video-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+.video-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  height: 100%;
+}
+
+.video-tile {
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.video-tile-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-tile-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 45%);
+  transition: background 0.3s ease;
+}
+
+.video-tile:hover .video-tile-overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.1) 60%);
+}
+
+.video-tile-caption {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: white;
+}
+
+.video-tile-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+.video-tile-cta {
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+
+.video-tile:hover .video-tile-cta {
+  transform: translateX(4px);
+}
+
+.video-hero-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.video-hero-logo img {
+  width: 130px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
+}
+
+/* Responsive: en celular, los 4 videos se apilan en una sola columna */
+@media (max-width: 720px) {
+  .video-hero-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 240px);
+    height: auto;
+  }
+
+  .video-hero-logo {
+    width: 90px;
+    height: 90px;
+  }
+
+  .video-hero-logo img {
+    width: 80px;
   }
 }
