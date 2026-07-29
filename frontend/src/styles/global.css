@@ -913,6 +913,11 @@ button {
 
 /* Responsive: en celular, los 4 videos se apilan en una sola columna */
 @media (max-width: 720px) {
+  .video-hero {
+    height: auto;
+    overflow: visible;
+  }
+
   .video-hero-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 240px);
@@ -920,6 +925,8 @@ button {
   }
 
   .video-hero-logo {
+    top: 500px;
+    left: 50%;
     width: 90px;
     height: 90px;
   }
@@ -927,4 +934,13 @@ button {
   .video-hero-logo img {
     width: 80px;
   }
+}
+/* Alinea el texto a la derecha en los cuadros de la columna derecha,
+   para que no choque con el logo centrado */
+.video-tile:nth-child(2) .video-tile-caption,
+.video-tile:nth-child(4) .video-tile-caption {
+  left: auto;
+  right: 24px;
+  align-items: flex-end;
+  text-align: right;
 }

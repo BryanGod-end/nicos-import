@@ -20,7 +20,6 @@ export default function Navbar() {
             <li><Link to="/categoria/tecnologia">Tecnología</Link></li>
             <li><Link to="/categoria/maquillaje">Maquillaje</Link></li>
             <li><Link to="/categoria/hogar">Hogar</Link></li>
-            <li><Link to="/categoria/cocina">Cocina</Link></li>
             <li><Link to="/categoria/juguetes">Juguetes</Link></li>
           </ul>
 
@@ -50,7 +49,6 @@ export default function Navbar() {
           <li><Link to="/categoria/tecnologia" onClick={closeMenu}>Tecnología</Link></li>
           <li><Link to="/categoria/maquillaje" onClick={closeMenu}>Maquillaje</Link></li>
           <li><Link to="/categoria/hogar" onClick={closeMenu}>Hogar</Link></li>
-          <li><Link to="/categoria/cocina" onClick={closeMenu}>Cocina</Link></li>
           <li><Link to="/categoria/juguetes" onClick={closeMenu}>Juguetes</Link></li>
         </ul>
       </div>
