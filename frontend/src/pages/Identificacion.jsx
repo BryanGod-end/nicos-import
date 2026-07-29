@@ -1,27 +1,58 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
+import { useCheckout } from '../context/CheckoutContext.jsx';
 import CheckoutSteps from '../components/CheckoutSteps.jsx';
 
 export default function Identificacion() {
   const { items, total } = useCart();
+  const { identificacion, updateIdentificacion } = useCheckout();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    correo: '',
-    nombre: '',
-    apellidos: '',
-    documento: '',
-    telefono: '',
-  });
+  const [form, setForm] = useState(identificacion);
+
+  const [errors, setErrors] = useState({});
 
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === 'documento' || name === 'telefono') {
+      const soloNumeros = value.replace(/\D/g, '');
+      setForm({ ...form, [name]: soloNumeros });
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
+  }
+
+  function validar() {
+    const nuevosErrores = {};
+
+    const todosIguales = (valor) => /^(\d)\1+$/.test(valor);
+
+    if (form.documento.length !== 8) {
+      nuevosErrores.documento = 'El DNI debe tener exactamente 8 dígitos';
+    } else if (todosIguales(form.documento)) {
+      nuevosErrores.documento = 'Ingresa un DNI válido';
+    }
+
+    if (form.telefono.length < 9) {
+      nuevosErrores.telefono = 'El teléfono debe tener al menos 9 dígitos';
+    } else if (todosIguales(form.telefono)) {
+      nuevosErrores.telefono = 'Ingresa un teléfono válido';
+    }
+
+    setErrors(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    navigate('/checkout/entrega'); // el paso "Entrega" lo construimos después
+
+    if (!validar()) return;
+
+    updateIdentificacion(form);
+    navigate('/checkout/entrega');
   }
 
   return (
@@ -55,11 +86,33 @@ export default function Identificacion() {
             <div className="checkout-field-row">
               <label className="checkout-field">
                 Documento de identidad
-                <input type="text" name="documento" value={form.documento} onChange={handleChange} required />
+                <input
+                  type="text"
+                  name="documento"
+                  value={form.documento}
+                  onChange={handleChange}
+                  maxLength={8}
+                  inputMode="numeric"
+                  required
+                />
+                {errors.documento && (
+                  <span style={{ color: 'crimson', fontSize: 12 }}>{errors.documento}</span>
+                )}
               </label>
               <label className="checkout-field">
                 Teléfono / móvil
-                <input type="tel" name="telefono" value={form.telefono} onChange={handleChange} required />
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={form.telefono}
+                  onChange={handleChange}
+                  maxLength={9}
+                  inputMode="numeric"
+                  required
+                />
+                {errors.telefono && (
+                  <span style={{ color: 'crimson', fontSize: 12 }}>{errors.telefono}</span>
+                )}
               </label>
             </div>
 
