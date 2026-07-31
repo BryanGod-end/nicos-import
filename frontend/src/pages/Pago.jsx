@@ -16,7 +16,8 @@ export default function Pago() {
   const [metodoPago, setMetodoPago] = useState('tarjeta'); // 'tarjeta' | 'qr'
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [estadoPago, setEstadoPago] = useState('idle'); // 'idle' | 'qr' | 'procesando' | 'error' | 'exito'
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState(''); // para terminos y condiciones (toast)
+  const [cardErrors, setCardErrors] = useState({});
   const [tarjeta, setTarjeta] = useState({
     numero: '',
     cuotas: '',
@@ -30,6 +31,9 @@ export default function Pago() {
   function handleTarjetaChange(e) {
     const { name, value } = e.target;
     setTarjeta({ ...tarjeta, [name]: value });
+    if (cardErrors[name]) {
+      setCardErrors({ ...cardErrors, [name]: undefined });
+    }
   }
 
   function handleEditarIdentificacion() {
@@ -41,28 +45,26 @@ export default function Pago() {
   }
 
   function validarTarjeta() {
+    const nuevosErrores = {};
+
     if (tarjeta.numero.replace(/\s/g, '').length < 15) {
-      setFormError('Ingresa un numero de tarjeta valido.');
-      return false;
+      nuevosErrores.numero = 'Ingresa un numero de tarjeta valido.';
     }
     if (!tarjeta.cuotas) {
-      setFormError('Selecciona en cuantas cuotas deseas pagar.');
-      return false;
+      nuevosErrores.cuotas = 'Selecciona en cuantas cuotas deseas pagar.';
     }
     if (!tarjeta.nombre.trim()) {
-      setFormError('Ingresa el nombre y apellido como figura en la tarjeta.');
-      return false;
+      nuevosErrores.nombre = 'Ingresa el nombre y apellido como figura en la tarjeta.';
     }
     if (!tarjeta.mes || !tarjeta.anio) {
-      setFormError('Selecciona la fecha de vencimiento de la tarjeta.');
-      return false;
+      nuevosErrores.fecha = 'Selecciona la fecha de vencimiento.';
     }
     if (tarjeta.cvv.length < 3) {
-      setFormError('Ingresa el codigo de seguridad (CVV).');
-      return false;
+      nuevosErrores.cvv = 'Ingresa el codigo de seguridad (CVV).';
     }
-    setFormError('');
-    return true;
+
+    setCardErrors(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
   }
 
   function handleComprarAhora() {
@@ -174,7 +176,7 @@ export default function Pago() {
                 </span>
               </label>
 
-              {metodoPago === 'tarjeta' && (
+             {metodoPago === 'tarjeta' && (
                 <div className="payment-method-body">
                   <label className="checkout-field">
                     Numero
@@ -185,6 +187,7 @@ export default function Pago() {
                       onChange={handleTarjetaChange}
                       maxLength={19}
                     />
+                    {cardErrors.numero && <span className="field-error-text">{cardErrors.numero}</span>}
                   </label>
 
                   <label className="checkout-field">
@@ -196,11 +199,13 @@ export default function Pago() {
                       <option value="6">6 cuotas</option>
                       <option value="12">12 cuotas</option>
                     </select>
+                    {cardErrors.cuotas && <span className="field-error-text">{cardErrors.cuotas}</span>}
                   </label>
 
                   <label className="checkout-field">
                     Nombre y Apellido como figura en la tarjeta
                     <input type="text" name="nombre" value={tarjeta.nombre} onChange={handleTarjetaChange} />
+                    {cardErrors.nombre && <span className="field-error-text">{cardErrors.nombre}</span>}
                   </label>
 
                   <div className="checkout-field-row">
@@ -220,6 +225,7 @@ export default function Pago() {
                           ))}
                         </select>
                       </div>
+                      {cardErrors.fecha && <span className="field-error-text">{cardErrors.fecha}</span>}
                     </label>
                     <label className="checkout-field">
                       Codigo de Seguridad
@@ -231,6 +237,7 @@ export default function Pago() {
                         maxLength={4}
                         style={{ width: 70 }}
                       />
+                      {cardErrors.cvv && <span className="field-error-text">{cardErrors.cvv}</span>}
                     </label>
                   </div>
 
@@ -271,9 +278,9 @@ export default function Pago() {
           </div>
 
           {formError && (
-            <div className="form-error-banner">
+            <div className="form-error-toast">
               <span className="form-error-icon">!</span>
-              <span>{formError}</span>
+              <span className="form-error-text">{formError}</span>
               <button
                 type="button"
                 className="form-error-close"
