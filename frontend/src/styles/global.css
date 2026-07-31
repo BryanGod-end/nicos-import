@@ -1052,8 +1052,18 @@ button {
 
 .payment-method-icons {
   margin-left: auto;
-  font-size: 12px;
-  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.payment-method-icons img {
+  height: 18px;
+  width: auto;
+  max-width: 32px;
+  object-fit: contain;
+  display: block;
 }
 
 .payment-method-body {
@@ -1149,4 +1159,80 @@ button {
   border-radius: 24px;
   font-weight: 600;
   cursor: pointer;
+}
+.payment-modal-qr {
+  background: #fff;
+  color: #1a1a1a;
+}
+
+.payment-qr-image {
+  display: block;
+  margin: 16px auto;
+  width: 220px;
+  height: 220px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+
+.payment-modal-btn-dark {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.payment-modal-link {
+  display: block;
+  margin: 12px auto 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.form-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FDECEC;
+  border: 1px solid #F3B9B9;
+  color: #B23A3A;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 13px;
+  animation: form-error-in 0.2s ease;
+}
+
+.form-error-icon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  background: #B23A3A;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.form-error-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #B23A3A;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+@keyframes form-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

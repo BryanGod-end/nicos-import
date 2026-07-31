@@ -15,8 +15,8 @@ export default function Pago() {
 
   const [metodoPago, setMetodoPago] = useState('tarjeta'); // 'tarjeta' | 'qr'
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
-  const [estadoPago, setEstadoPago] = useState('idle'); // 'idle' | 'procesando' | 'error' | 'exito'
-
+  const [estadoPago, setEstadoPago] = useState('idle'); // 'idle' | 'qr' | 'procesando' | 'error' | 'exito'
+  const [formError, setFormError] = useState('');
   const [tarjeta, setTarjeta] = useState({
     numero: '',
     cuotas: '',
@@ -40,12 +40,51 @@ export default function Pago() {
     navigate('/checkout/entrega');
   }
 
+  function validarTarjeta() {
+    if (tarjeta.numero.replace(/\s/g, '').length < 15) {
+      setFormError('Ingresa un numero de tarjeta valido.');
+      return false;
+    }
+    if (!tarjeta.cuotas) {
+      setFormError('Selecciona en cuantas cuotas deseas pagar.');
+      return false;
+    }
+    if (!tarjeta.nombre.trim()) {
+      setFormError('Ingresa el nombre y apellido como figura en la tarjeta.');
+      return false;
+    }
+    if (!tarjeta.mes || !tarjeta.anio) {
+      setFormError('Selecciona la fecha de vencimiento de la tarjeta.');
+      return false;
+    }
+    if (tarjeta.cvv.length < 3) {
+      setFormError('Ingresa el codigo de seguridad (CVV).');
+      return false;
+    }
+    setFormError('');
+    return true;
+  }
+
   function handleComprarAhora() {
     if (!aceptaTerminos) {
-      alert('Debes aceptar los Terminos y Condiciones y las Politicas de privacidad.');
+      setFormError('Debes aceptar los Terminos y Condiciones y las Politicas de privacidad.');
       return;
     }
 
+    if (metodoPago === 'qr') {
+      setFormError('');
+      setEstadoPago('qr');
+      return;
+    }
+
+    if (metodoPago === 'tarjeta' && !validarTarjeta()) {
+      return;
+    }
+
+    procesarPago();
+  }
+
+  function procesarPago() {
     setEstadoPago('procesando');
 
     // SIMULACION TEMPORAL: aqui luego se conecta la respuesta real de la pasarela (Culqi).
@@ -127,7 +166,7 @@ export default function Pago() {
                   name="metodoPago"
                   value="tarjeta"
                   checked={metodoPago === 'tarjeta'}
-                  onChange={() => setMetodoPago('tarjeta')}
+                  onChange={() => { setMetodoPago('tarjeta'); setFormError(''); }}
                 />
                 <span className="payment-method-icons">
                   <img src="/payment-icons/visa.png" alt="Visa" />
@@ -210,7 +249,7 @@ export default function Pago() {
                   name="metodoPago"
                   value="qr"
                   checked={metodoPago === 'qr'}
-                  onChange={() => setMetodoPago('qr')}
+                  onChange={() => { setMetodoPago('qr'); setFormError(''); }}
                 />
                 <span className="payment-method-label">Pago con QR, YAPE o PLIN</span>
               </label>
@@ -230,6 +269,21 @@ export default function Pago() {
               )}
             </div>
           </div>
+
+          {formError && (
+            <div className="form-error-banner">
+              <span className="form-error-icon">!</span>
+              <span>{formError}</span>
+              <button
+                type="button"
+                className="form-error-close"
+                onClick={() => setFormError('')}
+                aria-label="Cerrar"
+              >
+                x
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="checkout-summary">
@@ -270,6 +324,32 @@ export default function Pago() {
           </button>
         </div>
       </div>
+
+      {estadoPago === 'qr' && (
+        <div className="payment-modal-overlay">
+          <div className="payment-modal payment-modal-qr">
+            <h3>Escanea para pagar</h3>
+            <p className="checkout-form-hint">
+              Usa Yape, Plin o tu app de banco para escanear el codigo y completar el pago de{' '}
+              <strong>S/ {total.toFixed(2)}</strong>.
+            </p>
+            <img
+              className="payment-qr-image"
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=NicosImport-Pago-${total.toFixed(2)}`}
+              alt="Codigo QR de pago"
+            />
+            <p className="checkout-form-hint">
+              Este codigo expira en unos minutos. No cierres esta ventana hasta confirmar el pago.
+            </p>
+            <button type="button" className="payment-modal-btn payment-modal-btn-dark" onClick={procesarPago}>
+              Ya realice el pago
+            </button>
+            <button type="button" className="payment-modal-link" onClick={() => setEstadoPago('idle')}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {estadoPago === 'procesando' && (
         <div className="payment-modal-overlay">
