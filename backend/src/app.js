@@ -6,7 +6,7 @@ const categoryRoutes = require('./routes/category.routes');
 const cartRoutes = require('./routes/cart.routes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
-const {poolPromise, sql} = require('./config/db');
+const { getPool } = require('./config/db');
 const app = express();
 
 app.use(cors());
@@ -16,10 +16,11 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
 // Ruta de prueba temporal para verificar conexión a SQL Server
 app.get('/api/v1/test-db', async (req, res) => {
   try {
-    const pool = await poolPromise;
+    const pool = await getPool();
     const result = await pool.request().query('SELECT GETDATE() AS fecha');
     res.json({ 
       status: 'ok', 
@@ -30,7 +31,8 @@ app.get('/api/v1/test-db', async (req, res) => {
     res.status(500).json({ 
       status: 'error', 
       mensaje: 'Error al conectar con la base de datos',
-      error: err.message 
+      error: err.message,
+      code: err.code || null
     });
   }
 });

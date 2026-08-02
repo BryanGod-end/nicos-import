@@ -10,19 +10,38 @@ const dbConfig = {
   options: {
     encrypt: process.env.DB_ENCRYPT === 'true',
     trustServerCertificate: process.env.DB_ENCRYPT !== 'true'
-  }
+  },
+  connectionTimeout: 30000,
+  requestTimeout: 30000
 };
 
-const poolPromise = new sql.ConnectionPool(dbConfig)
-  .connect()
-  .then(pool => {
-    console.log('✅ Conectado a SQL Server -', process.env.DB_DATABASE);
+let pool = null;
+let connecting = null;
+
+// getPool() se puede llamar en cada request: si ya hay una conexión activa la reutiliza,
+// si no existe (o se cayó) intenta conectar de nuevo en vez de quedarse en un estado roto para siempre.
+async function getPool() {
+  if (pool && pool.connected) {
     return pool;
-  })
-  .catch(err => {
-    console.error('❌ Error de conexión a la base de datos:', err);
-  });
+  }
 
-module.exports = {
-  sql, poolPromise
-};
+  if (!connecting) {
+    connecting = new sql.ConnectionPool(dbConfig)
+      .connect()
+      .then((newPool) => {
+        console.log('✅ Conectado a SQL Server -', process.env.DB_DATABASE);
+        pool = newPool;
+        connecting = null;
+        return pool;
+      })
+      .catch((err) => {
+        console.error('❌ Error de conexión a la base de datos:', err.message);
+        connecting = null;
+        throw err; // IMPORTANTE: relanzamos para que quien llame se entere del fallo real
+      });
+  }
+
+  return connecting;
+}
+
+module.exports = { sql, getPool };

@@ -1,49 +1,47 @@
-const { poolPromise, sql } = require('../config/db');
+const sql = require('mssql');
+require('dotenv').config();
 
-async function findAll({ category } = {}) {
-  const pool = await poolPromise;
-  const request = pool.request();
+const dbConfig = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_DATABASE,
+  port: parseInt(process.env.DB_PORT),
+  options: {
+    encrypt: process.env.DB_ENCRYPT === 'true',
+    trustServerCertificate: process.env.DB_ENCRYPT !== 'true'
+  },
+  connectionTimeout: 30000,
+  requestTimeout: 30000
+};
 
-  let query = `
-    SELECT 
-      ProductoId AS id,
-      Nombre AS name,
-      Categoria AS category,
-      Precio AS price,
-      Stock AS stock,
-      ImagenUrl AS image,
-      Descripcion AS description
-    FROM Productos
-    WHERE Activo = 1
-  `;
+let pool = null;
+let connecting = null;
 
-  if (category) {
-    query += ' AND Categoria = @category';
-    request.input('category', sql.NVarChar, category);
+// getPool() se puede llamar en cada request: si ya hay una conexión activa la reutiliza,
+// si no existe (o se cayó) intenta conectar de nuevo en vez de quedarse en un estado roto para siempre.
+async function getPool() {
+  if (pool && pool.connected) {
+    return pool;
   }
 
-  const result = await request.query(query);
-  return result.recordset;
+  if (!connecting) {
+    connecting = new sql.ConnectionPool(dbConfig)
+      .connect()
+      .then((newPool) => {
+        console.log('✅ Conectado a SQL Server -', process.env.DB_DATABASE);
+        pool = newPool;
+        connecting = null;
+        return pool;
+      })
+      .catch((err) => {
+        console.error('❌ Error de conexión a la base de datos:', err.message);
+        connecting = null;
+        throw err; // IMPORTANTE: relanzamos para que quien llame se entere del fallo real
+      });
+  }
+
+  return connecting;
 }
 
-async function findById(id) {
-  const pool = await poolPromise;
-  const result = await pool.request()
-    .input('id', sql.Int, id)
-    .query(`
-      SELECT 
-        ProductoId AS id,
-        Nombre AS name,
-        Categoria AS category,
-        Precio AS price,
-        Stock AS stock,
-        ImagenUrl AS image,
-        Descripcion AS description
-      FROM Productos
-      WHERE ProductoId = @id AND Activo = 1
-    `);
-
-  return result.recordset[0] || null;
-}
-
-module.exports = { findAll, findById };
+module.exports = { sql, getPool };
