@@ -1,18 +1,49 @@
-const products = require('../data/products');
-
-// Esta capa simula un modelo de base de datos.
-// El día que se conecte MongoDB/PostgreSQL, solo se reescriben estas funciones
-// (por ejemplo con Mongoose o Prisma) y el resto de la app no cambia.
+const { poolPromise, sql } = require('../config/db');
 
 async function findAll({ category } = {}) {
+  const pool = await poolPromise;
+  const request = pool.request();
+
+  let query = `
+    SELECT 
+      ProductoId AS id,
+      Nombre AS name,
+      Categoria AS category,
+      Precio AS price,
+      Stock AS stock,
+      ImagenUrl AS image,
+      Descripcion AS description
+    FROM Productos
+    WHERE Activo = 1
+  `;
+
   if (category) {
-    return products.filter((p) => p.category === category);
+    query += ' AND Categoria = @category';
+    request.input('category', sql.NVarChar, category);
   }
-  return products;
+
+  const result = await request.query(query);
+  return result.recordset;
 }
 
 async function findById(id) {
-  return products.find((p) => p.id === Number(id)) || null;
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .input('id', sql.Int, id)
+    .query(`
+      SELECT 
+        ProductoId AS id,
+        Nombre AS name,
+        Categoria AS category,
+        Precio AS price,
+        Stock AS stock,
+        ImagenUrl AS image,
+        Descripcion AS description
+      FROM Productos
+      WHERE ProductoId = @id AND Activo = 1
+    `);
+
+  return result.recordset[0] || null;
 }
 
 module.exports = { findAll, findById };
