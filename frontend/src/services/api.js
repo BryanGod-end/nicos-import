@@ -29,3 +29,9 @@ export const calculateCart = (items) =>
     method: 'POST',
     body: JSON.stringify({ items }),
   });
+
+export const createOrder = (orderData) =>
+  request('/orders', {
+    method: 'POST',
+    body: JSON.stringify(orderData),
+  });

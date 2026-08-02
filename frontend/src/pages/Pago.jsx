@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useCheckout } from '../context/CheckoutContext.jsx';
+import { createOrder } from '../services/api.js';
 import CheckoutSteps from '../components/CheckoutSteps.jsx';
 
 const MESES = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
@@ -9,7 +10,7 @@ const ANIO_ACTUAL = new Date().getFullYear();
 const ANIOS = Array.from({ length: 10 }, (_, i) => String(ANIO_ACTUAL + i).slice(-2));
 
 export default function Pago() {
-  const { items, total } = useCart();
+  const { items, total, clearCart } = useCart();
   const { identificacion, entrega } = useCheckout();
   const navigate = useNavigate();
 
@@ -17,6 +18,7 @@ export default function Pago() {
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [estadoPago, setEstadoPago] = useState('idle'); // 'idle' | 'qr' | 'procesando' | 'error' | 'exito'
   const [formError, setFormError] = useState(''); // para terminos y condiciones (toast)
+  const [errorPago, setErrorPago] = useState(''); // mensaje real del backend si algo falla
   const [cardErrors, setCardErrors] = useState({});
   const [tarjeta, setTarjeta] = useState({
     numero: '',
@@ -86,21 +88,28 @@ export default function Pago() {
     procesarPago();
   }
 
-  function procesarPago() {
+  async function procesarPago() {
     setEstadoPago('procesando');
+    setErrorPago('');
 
-    // SIMULACION TEMPORAL: aqui luego se conecta la respuesta real de la pasarela (Culqi).
-    setTimeout(() => {
-      const exito = Math.random() > 0.4; // 60% exito, solo para probar el diseno
-      if (exito) {
-        setEstadoPago('exito');
-        setTimeout(() => {
-          navigate('/checkout/confirmacion');
-        }, 1200);
-      } else {
-        setEstadoPago('error');
-      }
-    }, 2000);
+    try {
+      const resultado = await createOrder({
+        identificacion,
+        entrega,
+        items,
+        total,
+        metodoPago,
+      });
+
+      setEstadoPago('exito');
+      clearCart();
+      setTimeout(() => {
+        navigate('/checkout/confirmacion', { state: { pedidoId: resultado.pedidoId } });
+      }, 1200);
+    } catch (err) {
+      setErrorPago(err.message || 'No pudimos procesar tu pedido. Intenta nuevamente.');
+      setEstadoPago('error');
+    }
   }
 
   function handleReintentar() {
@@ -374,8 +383,7 @@ export default function Pago() {
         <div className="payment-modal-overlay">
           <div className="payment-modal payment-modal-warning">
             <h3>Por favor, revisa los detalles de pago</h3>
-            <p>Tu compra no se ha finalizado debido a un problema en la autorizacion de pago.</p>
-            <p>Tu pago ha sido rechazado debido a informacion incorrecta o saldo insuficiente.</p>
+            <p>{errorPago || 'Tu compra no se ha finalizado debido a un problema en la autorizacion de pago.'}</p>
             <button type="button" className="payment-modal-btn" onClick={handleReintentar}>
               Verifica los datos o selecciona otro medio de pago
             </button>
