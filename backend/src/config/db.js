@@ -8,15 +8,15 @@ const dbConfig = {
   database: process.env.DB_DATABASE,
   port: parseInt(process.env.DB_PORT),
   options: {
-    encrypt: false,
-    trustServerCertificate: true
+    encrypt: process.env.DB_ENCRYPT === 'true',
+    trustServerCertificate: process.env.DB_ENCRYPT !== 'true'
   }
 };
 
 const poolPromise = new sql.ConnectionPool(dbConfig)
   .connect()
   .then(pool => {
-    console.log('✅ Conectado a SQL Server - NicosImportBD');
+    console.log('✅ Conectado a SQL Server -', process.env.DB_DATABASE);
     return pool;
   })
   .catch(err => {
