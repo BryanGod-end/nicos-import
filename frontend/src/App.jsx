@@ -11,6 +11,9 @@ import Entrega from './pages/Entrega.jsx';
 import Pago from './pages/Pago.jsx';
 import Confirmacion from './pages/Confirmacion.jsx';
 import NotFound from './pages/NotFound.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
+import AdminPedidos from './pages/AdminPedidos.jsx';
+import AdminRoute from './components/AdminRoute.jsx';
 
 export default function App() {
   const location = useLocation();
@@ -29,10 +32,11 @@ export default function App() {
         <Route path="/checkout/entrega" element={<Entrega />} />
         <Route path="/checkout/pago" element={<Pago />} />
         <Route path="/checkout/confirmacion" element={<Confirmacion />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/pedidos" element={<AdminRoute><AdminPedidos /></AdminRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!isHome && <Footer />}
     </>
   );
 }
-

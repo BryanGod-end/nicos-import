@@ -35,3 +35,30 @@ export const createOrder = (orderData) =>
     method: 'POST',
     body: JSON.stringify(orderData),
   });
+
+export const adminLogin = (credenciales) =>
+  request('/admin/login', {
+    method: 'POST',
+    body: JSON.stringify(credenciales),
+  });
+
+function authHeader() {
+  const token = sessionStorage.getItem('adminToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export const getAdminOrders = () =>
+  fetch(`${API_URL}/orders`, { headers: { ...authHeader() } })
+    .then((res) => res.json())
+    .then((body) => {
+      if (body.error) throw new Error(body.error.message);
+      return body.data;
+    });
+
+export const getAdminOrderById = (id) =>
+  fetch(`${API_URL}/orders/${id}`, { headers: { ...authHeader() } })
+    .then((res) => res.json())
+    .then((body) => {
+      if (body.error) throw new Error(body.error.message);
+      return body.data;
+    });
