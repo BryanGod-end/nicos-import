@@ -52,7 +52,10 @@ export default function AdminPedidos() {
   return (
     <div className="container" style={{ padding: '32px 24px 64px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h2>Panel de pedidos</h2>
+        <h2>
+          <img src="/images/logoNicos.png" alt="Nico's Import" className="admin-brand-icon" />
+          Panel de pedidos
+        </h2>
         <button type="button" className="checkout-edit-btn" onClick={handleLogout}>
           Cerrar sesion
         </button>
