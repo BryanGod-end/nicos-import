@@ -103,4 +103,61 @@ async function createOrder({ identificacion, entrega, items, total, metodoPago }
   }
 }
 
-module.exports = { createOrder };
+async function findAll() {
+  const pool = await getPool();
+  const result = await pool.request().query(`
+    SELECT 
+      p.PedidoId, p.Total, p.Estado, p.FechaPedido,
+      c.Nombre, c.Apellido, c.Email, c.Telefono
+    FROM Pedidos p
+    JOIN Clientes c ON p.ClienteId = c.ClienteId
+    ORDER BY p.PedidoId DESC
+  `);
+  return result.recordset;
+}
+
+async function findById(pedidoId) {
+  const pool = await getPool();
+
+  const pedidoResult = await pool.request()
+    .input('pedidoId', sql.Int, pedidoId)
+    .query(`
+      SELECT 
+        p.PedidoId, p.Total, p.Estado, p.FechaPedido,
+        c.ClienteId, c.Nombre, c.Apellido, c.Email, c.Telefono, c.DNI,
+        d.Departamento, d.Provincia, d.Distrito, d.DireccionCompleta, d.Referencia
+      FROM Pedidos p
+      JOIN Clientes c ON p.ClienteId = c.ClienteId
+      JOIN Direcciones d ON p.DireccionId = d.DireccionId
+      WHERE p.PedidoId = @pedidoId
+    `);
+
+  if (pedidoResult.recordset.length === 0) {
+    return null;
+  }
+
+  const itemsResult = await pool.request()
+    .input('pedidoId', sql.Int, pedidoId)
+    .query(`
+      SELECT dp.ProductoId, pr.Nombre, dp.Cantidad, dp.PrecioUnitario, dp.Subtotal
+      FROM DetallePedido dp
+      JOIN Productos pr ON dp.ProductoId = pr.ProductoId
+      WHERE dp.PedidoId = @pedidoId
+    `);
+
+  const pagoResult = await pool.request()
+    .input('pedidoId', sql.Int, pedidoId)
+    .query(`
+      SELECT MetodoPago, MontoPagado, EstagoPago, FechaPago
+      FROM Pagos
+      WHERE PedidoId = @pedidoId
+    `);
+
+  return {
+    pedido: pedidoResult.recordset[0],
+    items: itemsResult.recordset,
+    pago: pagoResult.recordset[0] || null,
+  };
+}
+
+module.exports = { createOrder, findAll, findById };

@@ -9,6 +9,7 @@ const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { getPool } = require('./config/db');
 const app = express();
+const authRoutes = require('./routes/auth.routes');
 
 app.use(cors());
 app.use(express.json());
@@ -43,6 +44,7 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/admin', authRoutes);
 
 // 404 para rutas no encontradas
 app.use(notFound);

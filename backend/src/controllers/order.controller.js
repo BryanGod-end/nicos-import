@@ -32,4 +32,25 @@ async function createOrder(req, res, next) {
   }
 }
 
-module.exports = { createOrder };
+async function getOrders(req, res, next) {
+  try {
+    const pedidos = await orderModel.findAll();
+    res.json({ data: pedidos });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getOrderById(req, res, next) {
+  try {
+    const pedido = await orderModel.findById(req.params.id);
+    if (!pedido) {
+      return res.status(404).json({ error: { message: 'Pedido no encontrado' } });
+    }
+    res.json({ data: pedido });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createOrder, getOrders, getOrderById };
