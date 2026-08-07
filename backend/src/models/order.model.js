@@ -72,16 +72,14 @@ async function createOrder({ identificacion, entrega, items, total, metodoPago }
 
     // 4. Insertar una fila de DetallePedido por cada producto del carrito
     for (const item of items) {
-      const subtotal = item.price * item.quantity;
       await new sql.Request(transaction)
         .input('pedidoId', sql.Int, pedidoId)
         .input('productoId', sql.Int, item.productId)
         .input('cantidad', sql.Int, item.quantity)
         .input('precioUnitario', sql.Decimal(10, 2), item.price)
-        .input('subtotal', sql.Decimal(10, 2), subtotal)
         .query(`
-          INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario, Subtotal)
-          VALUES (@pedidoId, @productoId, @cantidad, @precioUnitario, @subtotal)
+          INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario)
+          VALUES (@pedidoId, @productoId, @cantidad, @precioUnitario)
         `);
     }
 
